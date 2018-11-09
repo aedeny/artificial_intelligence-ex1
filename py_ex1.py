@@ -10,14 +10,15 @@ class Node:
         self.parent = parent
 
     def state_string(self):
-        return ''.join(str(x) for x in self.state)
+        return ','.join(str(x) for x in self.state)
 
 
 class TilePuzzle:
     def __init__(self, input_file):
         self.algorithm_num, self.size, self.root = self.parse_file(input_file)
         self.algorithms = {1: self._ids, 2: self._bfs, 3: self._a_star}
-        self.goal = [1, 2, 3, 4, 5, 6, 7, 8, 0]
+        self.goal = [x for x in range(1, self.size ** 2)]
+        self.goal.append(0)
 
     def print_board(self):
         for i in range(0, self.size * self.size, self.size):
@@ -96,12 +97,12 @@ class TilePuzzle:
             successors = self._successors(current_node)
             current_node.children = successors
             for s in successors:
-                if s.state_string() not in opened or s.state_string() in closed:
+                if s.state_string() not in opened and s.state_string() not in closed:
                     if s.state == self.goal:
                         return self.get_path_from_root(s)
                     opened.add(s.state_string())
                     queue.append(s)
-        return False
+        return 'Sorry, unsolvable'
 
     def _a_star(self):
         print("Solving with A*...")
