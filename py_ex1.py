@@ -34,7 +34,7 @@ class TilePuzzle:
 
     def _successors(self, node):
         successors = []
-        last_operator = 'G' #node.operator
+        last_operator = 'G'  # node.operator
         z = node.state.index(0)
         length = self.size ** 2
 
@@ -122,7 +122,7 @@ if __name__ == '__main__':
     t = TilePuzzle(sys.argv[1])
     t.print_board()
     path, total_opened, depth = t.solve()
-    string = path + ' ' + str(total_opened) + ' ' + str(depth)
-    print(string)
+    result_string = path + ' ' + str(total_opened) + ' ' + str(depth)
+    print(result_string)
     with open('output.txt', 'w') as f:
-        f.write(string)
+        f.write(result_string)
