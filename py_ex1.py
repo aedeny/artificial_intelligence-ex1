@@ -95,9 +95,9 @@ class TilePuzzle:
 
     @staticmethod
     def parse_file(input_file):
-        with open(input_file, 'r') as f:
-            lines = f.readlines()
-
+        f = open(input_file, 'r')
+        lines = f.readlines()
+        f.close()
         algorithm = int(lines[0])
         size = int(lines[1])
         initial_state = Node([int(x) for x in lines[2].split('-')], 0)
@@ -121,7 +121,7 @@ class TilePuzzle:
         while True:
             found, remaining = self._dls(self.root, max_depth)
             if found:
-                return self.get_path_from_root(found), remaining, max_depth + 1
+                return self.get_path_from_root(found), remaining, max_depth
             elif not remaining:
                 return None
             max_depth += 1
@@ -135,7 +135,7 @@ class TilePuzzle:
         """
         if depth == 0:
             if node.state == self.goal:
-                return node, 0
+                return node, 1
             else:
                 # Not found, but may have successors
                 return None, 1
@@ -220,5 +220,6 @@ if __name__ == '__main__':
         result_string = 'No Solution'
 
     print(result_string)
-    with open('output.txt', 'w') as f:
-        f.write(result_string)
+    f = open('output.txt', 'w')
+    f.write(result_string)
+    f.close()
