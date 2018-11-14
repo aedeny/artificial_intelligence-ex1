@@ -25,7 +25,7 @@ class Node:
         return '<' + self.state_string() + '>'
 
     def __lt__(self, other):
-        return self.h + self.g < other.h + other.g
+        return self.f < other.f
 
     def state_string(self):
         return ','.join(str(x) for x in self.state)
@@ -184,15 +184,16 @@ class TilePuzzle:
         opened = []
         self.root.g = 0
         self.root.h = self._manhattan_distance(self.root.state)
-        heappush(opened, (self.root.f, self.root))
+        heappush(opened, self.root)
         closed = set()
 
+        counter = 0
         while opened:
-            n = heappop(opened)[1]
-
+            n = heappop(opened)
+            counter += 1
             if n.state == self.goal:
                 path = self.get_path_from_root(n)
-                return path, len(closed), len(path)
+                return path, counter, len(path)
 
             if n in closed:
                 continue
@@ -200,7 +201,7 @@ class TilePuzzle:
             for s in self._successors(n):
                 s.g = n.g + 1
                 s.h = self._manhattan_distance(s.state)
-                heappush(opened, (s.f, s))
+                heappush(opened, s)
             closed.add(n)
         return False, len(closed), -1
 
