@@ -1,5 +1,4 @@
 import datetime
-import sys
 from collections import deque
 
 
@@ -42,9 +41,8 @@ class TilePuzzle:
         self.algorithm_num, self.size, self.root = self.parse_file(input_file)
         self.algorithms = {1: Algorithm(self._ids, 'IDS'), 2: Algorithm(self._bfs, 'BFS'),
                            3: Algorithm(self._a_star, 'A*')}
-        self.goal = [x for x in range(1, self.size ** 2)]
-        self.goal.append(0)
         self.length = self.size ** 2
+        self.goal = [x % self.length for x in range(1, self.length + 1)]
 
     def print_board(self):
         print('Initial State:')
@@ -160,10 +158,10 @@ class TilePuzzle:
             queue.extend(successors)
         return False, -1, -1
 
-    def _array_index_to_row_col(self, i):
+    def _list_index_to_matrix_index(self, i):
         """
         Calculates row and column indices.
-        :param i: An index in a 1-dim array.
+        :param i: An index in a list.
         :return: A 2-tuple of (row, column) of a square matrix of size self.size.
         """
         return int(i / self.size), i % self.size
@@ -171,10 +169,13 @@ class TilePuzzle:
     def _manhattan_distance(self, state_as_list):
         distances_sum = 0
         for current_index, n in enumerate(state_as_list):
+
+            # Ignores the empty tile to make the heuristic function admissible.
             if n == 0:
                 continue
-            current_row, current_column = self._array_index_to_row_col(current_index)
-            goal_row, goal_column = self._array_index_to_row_col(self.goal.index(n))
+
+            current_row, current_column = self._list_index_to_matrix_index(current_index)
+            goal_row, goal_column = self._list_index_to_matrix_index(self.goal.index(n))
             distances_sum += abs(goal_row - current_row) + abs(goal_column - current_column)
 
         return distances_sum
@@ -203,11 +204,11 @@ class TilePuzzle:
                 s.h = self._manhattan_distance(s.state)
                 heappush(opened, s)
             closed.add(n)
-        return False, len(closed), -1
+        return False, counter, -1
 
 
 if __name__ == '__main__':
-    t = TilePuzzle(sys.argv[1])
+    t = TilePuzzle('input.txt')
     t.print_board()
     path, total_opened, depth = t.solve()
     if path:
@@ -222,5 +223,5 @@ if __name__ == '__main__':
 
     print(result_string)
     f = open('output.txt', 'w')
-    f.write(result_string)
+    f.write('\n' + result_string)
     f.close()
