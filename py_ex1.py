@@ -1,5 +1,15 @@
 import datetime
-from collections import deque
+
+
+def parse_file(input_file):
+    f = open(input_file, 'r')
+    lines = f.readlines()
+    f.close()
+    algorithm_num = int(lines[0])
+    board_size = int(lines[1])
+    initial_state = Node([int(x) for x in lines[2].split('-')], 0)
+
+    return algorithm_num, board_size, initial_state
 
 
 class Node:
@@ -37,8 +47,8 @@ class Algorithm:
 
 
 class TilePuzzle:
-    def __init__(self, input_file):
-        self.algorithm_num, self.size, self.root = self.parse_file(input_file)
+    def __init__(self, board_size, initial_state):
+        self.size, self.root = board_size, initial_state
         self.algorithms = {1: Algorithm(self._ids, 'IDS'), 2: Algorithm(self._bfs, 'BFS'),
                            3: Algorithm(self._a_star, 'A*')}
         self.length = self.size ** 2
@@ -91,20 +101,15 @@ class TilePuzzle:
             return 'NOTHING'
         return ''.join(path)
 
-    @staticmethod
-    def parse_file(input_file):
-        f = open(input_file, 'r')
-        lines = f.readlines()
-        f.close()
-        algorithm = int(lines[0])
-        size = int(lines[1])
-        initial_state = Node([int(x) for x in lines[2].split('-')], 0)
-
-        return algorithm, size, initial_state
-
-    def solve(self):
-        if self.algorithm_num in self.algorithms:
-            algorithm = self.algorithms[self.algorithm_num]
+    def solve(self, algorithm_num):
+        """
+        Tries to solve the puzzle.
+        :param algorithm_num: A number representing the algorithm to use to solve the puzzle.
+        :return: If a solution exists, returns the shortest path from the initial state to the goal state. Otherwise,
+        returns 'No Solution'.
+        """
+        if algorithm_num in self.algorithms:
+            algorithm = self.algorithms[algorithm_num]
             start_time = datetime.datetime.today()
             print(str(start_time) + ': Solving with ' + algorithm.name + '...')
             result = algorithm.method()
@@ -112,7 +117,7 @@ class TilePuzzle:
             print (str(end_time) + ': Finished in ' + str(end_time - start_time) + '.')
             return result
         else:
-            raise Exception('An algorithm with number ' + str(self.algorithm_num) + ' was not found.')
+            raise Exception('An algorithm with number ' + str(algorithm_num) + ' was not found.')
 
     def _ids(self):
         max_depth = 0
@@ -128,7 +133,7 @@ class TilePuzzle:
         """
         Depth Limited Search
         :param node:
-        :param depth:
+        :param depth: Maximum depth.
         :return:
         """
         if depth == 0:
@@ -147,6 +152,8 @@ class TilePuzzle:
         return None, current
 
     def _bfs(self):
+        from collections import deque
+
         queue = deque([self.root])
         counter = 0
         while queue:
@@ -167,6 +174,11 @@ class TilePuzzle:
         return int(i / self.size), i % self.size
 
     def _manhattan_distance(self, state_as_list):
+        """
+        Calculates the sum of Manhattan Distance for each non-empty tile in state_as_list.
+        :param state_as_list: A list representing a state
+        :return: The Manhattan Distance sum of each non-empty tile.
+        """
         distances_sum = 0
         for current_index, n in enumerate(state_as_list):
 
@@ -182,11 +194,12 @@ class TilePuzzle:
 
     def _a_star(self):
         from heapq import heappush, heappop
+
         opened = []
         self.root.g = 0
         self.root.h = self._manhattan_distance(self.root.state)
         heappush(opened, self.root)
-        closed = set()
+        # closed = set()
 
         counter = 0
         while opened:
@@ -196,21 +209,23 @@ class TilePuzzle:
                 path = self.get_path_from_root(n)
                 return path, counter, len(path)
 
-            if n in closed:
-                continue
+            # if n in closed:
+            #     continue
 
             for s in self._successors(n):
                 s.g = n.g + 1
                 s.h = self._manhattan_distance(s.state)
                 heappush(opened, s)
-            closed.add(n)
+            # closed.add(n)
         return False, counter, -1
 
 
 if __name__ == '__main__':
-    t = TilePuzzle('input.txt')
+    algorithm_num, board_size, root = parse_file('input.txt')
+    t = TilePuzzle(board_size, root)
     t.print_board()
-    path, total_opened, depth = t.solve()
+
+    path, total_opened, depth = t.solve(algorithm_num)
     if path:
         result_string = path + ' ' + str(total_opened) + ' ' + str(depth)
 
